@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from src.gmail_sender import send_token_warning_email
+from gmail_sender import send_token_warning_email
 
 def check_token_expiry():
     issue_date_str = os.environ.get("LINKEDIN_TOKEN_ISSUE_DATE")

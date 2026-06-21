@@ -58,8 +58,8 @@ def poll_gmail_approvals():
         if status != "OK":
             return
             
-        from src.linkedin_poster import post_to_linkedin
-        from src.sheets_logger import log_action
+        from linkedin_poster import post_to_linkedin
+        from sheets_logger import log_action
         
         message_ids = messages[0].split()
         for mail_id in message_ids:

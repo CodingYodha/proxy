@@ -1,0 +1,6 @@
+anthropic
+groq
+gspread
+google-auth
+requests
+python-dotenv

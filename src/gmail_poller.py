@@ -36,6 +36,19 @@ def poll_gmail_approvals():
         except:
             return
 
+    from datetime import datetime, timedelta
+    current_time = datetime.now()
+    
+    # Discard any pending approvals older than 24 hours
+    for urn, data in pending_approvals.items():
+        if data["status"] == "pending" and "sent_at" in data:
+            try:
+                sent_at = datetime.fromisoformat(data["sent_at"])
+                if current_time - sent_at > timedelta(hours=24):
+                    data["status"] = "expired"
+            except:
+                pass
+
     try:
         mail = imaplib.IMAP4_SSL("imap.gmail.com")
         mail.login(sender_email, sender_password)

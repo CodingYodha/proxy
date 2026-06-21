@@ -49,7 +49,7 @@ def filter_posts():
                     {"role": "system", "content": "You are a JSON-only response bot."},
                     {"role": "user", "content": prompt}
                 ],
-                model="llama3-8b-8192",
+                model="openai/gpt-oss-120b",
                 temperature=0.0
             )
             

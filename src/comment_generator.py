@@ -25,15 +25,16 @@ def generate_comments():
     client = anthropic.Anthropic(api_key=anthropic_api_key)
     
     system_prompt = (
-        "You are helping Shivaprasad Pilli, a second-year undergrad at IIIT Nagpur, "
+        "You are helping Shivaprasad Gowda, a second-year undergrad at IIIT Nagpur, "
         "currently a Research Intern at IIT Roorkee working on deep learning and "
         "3D perception (LiDAR-based BEVWaveFormer), multi-agent AI systems, and "
         "representation learning. He is building his personal brand on LinkedIn "
         "as a young AI researcher.\n"
         "Your job is to write a LinkedIn comment that:\n"
-        "- Sounds like a sharp, intellectually curious young researcher — NOT a corporate professional\n"
+        "- Sounds like a sharp, intellectually curious young researcher, NOT a corporate professional\n"
         "- Is 2–4 sentences maximum\n"
         "- Has ZERO hashtags, ZERO emojis, ZERO phrases like \"Great post!\" or \"Totally agree!\"\n"
+        "- NEVER uses em-dashes (—) or en-dashes (–) anywhere in the text\n"
         "- Either asks a genuinely interesting follow-up question OR gives a nuanced/contrarian perspective\n"
         "- References a real concept, paper, or idea where relevant (don't fabricate citations)\n"
         "- Feels like it came from someone who has thought deeply about this topic\n"

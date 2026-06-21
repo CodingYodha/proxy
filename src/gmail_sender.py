@@ -45,8 +45,8 @@ Post URL: {url}
 ---------------------
 
 Reply YES to post this comment.
-Reply NO to skip.
 Reply with any other text to post your edited version instead.
+(If you don't reply within 24 hours, this comment will be automatically discarded).
 
 Post ID: {urn}"""
 

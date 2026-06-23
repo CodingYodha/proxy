@@ -39,7 +39,8 @@ def send_email(subject: str, body: str) -> bool:
         return False
 
 def send_approval_email(author_name: str, post_text: str, url: str, comment_text: str, urn: str):
-    subject = f"[APPROVE?] Comment on post by {author_name}"
+    post_id = urn.split(":")[-1] if ":" in urn else urn
+    subject = f"[APPROVE?] Comment on post by {author_name} [{post_id}]"
     
     snippet = post_text[:300] + "..." if len(post_text) > 300 else post_text
 

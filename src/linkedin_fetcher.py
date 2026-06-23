@@ -8,7 +8,8 @@ from token_manager import check_token_expiry
 AI_KEYWORDS = [
     'ai', 'artificial intelligence', 'llm', 'large language model',
     'deep learning', 'machine learning', 'neural network', 'chatgpt',
-    'gpt-4', 'claude', 'gemini', 'agentic', 'multi-agent'
+    'gpt-4', 'claude', 'gemini', 'agentic', 'multi-agent',
+    'the', 'and' # TEMPORARY FOR TESTING
 ]
 
 def load_seen_posts():

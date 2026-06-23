@@ -2,8 +2,8 @@ name: Poll Gmail Approvals
 
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: '*/15 * * * *'
+  schedule:
+    - cron: '*/10 * * * *'
 
 jobs:
   run:

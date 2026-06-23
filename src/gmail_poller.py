@@ -83,8 +83,8 @@ def poll_gmail_approvals():
                         
                     urn = None
                     for line in body.splitlines():
-                        if line.startswith("Post ID: urn:li:activity:"):
-                            urn = line.split("Post ID: ")[1].strip()
+                        if "Post ID: urn:li:activity:" in line:
+                            urn = line.split("Post ID: ")[1].replace(">", "").strip()
                             break
                             
                     if urn and urn in pending_approvals and pending_approvals[urn]["status"] == "pending":

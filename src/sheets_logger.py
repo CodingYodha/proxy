@@ -24,13 +24,13 @@ def log_action(author: str, post_url: str, post_snippet: str, post_type: str, dr
         
         row = [
             timestamp,
-            author,
-            post_url,
-            post_snippet,
-            post_type,
-            drafted_comment,
-            final_comment,
-            status
+            author or "",
+            post_url or "",
+            post_snippet or "",
+            post_type or "",
+            drafted_comment or "",
+            final_comment or "",
+            status or ""
         ]
         
         sheet.append_row(row)

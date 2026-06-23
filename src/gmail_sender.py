@@ -5,14 +5,19 @@ import os
 import json
 from datetime import datetime
 
-def send_email(subject: str, body: str):
+# Project root (one level up from src/)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(PROJECT_ROOT, 'data')
+
+def send_email(subject: str, body: str) -> bool:
+    """Send an email. Returns True on success, False on failure."""
     sender_email = os.environ.get("GMAIL_SENDER_ADDRESS")
     sender_password = os.environ.get("GMAIL_SENDER_APP_PASSWORD")
     receiver_email = os.environ.get("GMAIL_RECEIVER_ADDRESS")
 
     if not sender_email or not sender_password or not receiver_email:
         print("Missing email credentials. Cannot send email.")
-        return
+        return False
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
@@ -28,8 +33,10 @@ def send_email(subject: str, body: str):
         server.send_message(msg)
         server.quit()
         print(f"Successfully sent email to {receiver_email} with subject: {subject}")
+        return True
     except Exception as e:
         print(f"Error sending email: {e}")
+        return False
 
 def send_approval_email(author_name: str, post_text: str, url: str, comment_text: str, urn: str):
     subject = f"[APPROVE?] Comment on post by {author_name}"
@@ -45,13 +52,17 @@ Post URL: {url}
 ---------------------
 
 Reply YES to post this comment.
+Reply NO to reject it.
 Reply with any other text to post your edited version instead.
 (If you don't reply within 24 hours, this comment will be automatically discarded).
 
 Post ID: {urn}"""
 
-    send_email(subject, body)
-    return subject
+    success = send_email(subject, body)
+    if success:
+        return subject
+    else:
+        return None
 
 def send_token_warning_email(days_left: int):
     subject = "[URGENT] LinkedIn Token Expiry Warning"
@@ -59,8 +70,8 @@ def send_token_warning_email(days_left: int):
     send_email(subject, body)
 
 def process_candidate_posts():
-    candidate_file = "data/candidate_posts.json"
-    pending_file = "data/pending_approvals.json"
+    candidate_file = os.path.join(DATA_DIR, "candidate_posts.json")
+    pending_file = os.path.join(DATA_DIR, "pending_approvals.json")
     
     if not os.path.exists(candidate_file):
         print("No candidate posts to send approvals for.")
@@ -69,7 +80,7 @@ def process_candidate_posts():
     with open(candidate_file, "r") as f:
         try:
             posts = json.load(f)
-        except:
+        except (json.JSONDecodeError, ValueError):
             posts = []
 
     if not posts:
@@ -80,40 +91,56 @@ def process_candidate_posts():
         with open(pending_file, "r") as f:
             try:
                 pending_approvals = json.load(f)
-            except:
+            except (json.JSONDecodeError, ValueError):
                 pass
                 
     sent_count = 0
     for post in posts:
         urn = post.get("urn")
         comment = post.get("drafted_comment")
-        if not comment or urn in pending_approvals:
+        if not comment or not urn or urn in pending_approvals:
             continue
-            
+        
+        # Provide safe defaults for missing fields
+        author = post.get("author") or "Unknown Author"
+        post_text = post.get("text") or ""
+        post_url = post.get("url") or ""
+        
         subject = send_approval_email(
-            author_name=post.get("author"),
-            post_text=post.get("text"),
-            url=post.get("url"),
+            author_name=author,
+            post_text=post_text,
+            url=post_url,
             comment_text=comment,
             urn=urn
         )
+        
+        # Only record as pending if the email was actually sent
+        if subject is None:
+            print(f"Failed to send approval email for {urn}. Skipping.")
+            continue
         
         pending_approvals[urn] = {
             "drafted_comment": comment,
             "email_subject": subject,
             "status": "pending",
             "sent_at": datetime.now().isoformat(),
-            "author": post.get("author"),
-            "url": post.get("url"),
+            "author": author,
+            "url": post_url,
             "post_type": post.get("post_type", "insight"),
-            "text": post.get("text")
+            "text": post_text
         }
         sent_count += 1
-        
+    
+    os.makedirs(DATA_DIR, exist_ok=True)
     with open(pending_file, "w") as f:
         json.dump(pending_approvals, f, indent=4)
+    
+    # Only remove candidate file after everything is safely saved
+    try:
+        os.remove(candidate_file)
+    except OSError as e:
+        print(f"Warning: Could not remove candidate file: {e}")
         
-    os.remove(candidate_file)
     print(f"Sent {sent_count} approval emails.")
 
 if __name__ == "__main__":

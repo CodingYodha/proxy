@@ -2,8 +2,12 @@ import os
 import json
 import anthropic
 
+# Project root (one level up from src/)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(PROJECT_ROOT, 'data')
+
 def generate_comments():
-    candidate_file = "data/candidate_posts.json"
+    candidate_file = os.path.join(DATA_DIR, "candidate_posts.json")
     if not os.path.exists(candidate_file):
         print("No candidate posts.")
         return
@@ -11,7 +15,7 @@ def generate_comments():
     with open(candidate_file, "r") as f:
         try:
             posts = json.load(f)
-        except:
+        except (json.JSONDecodeError, ValueError):
             posts = []
 
     if not posts:
@@ -48,6 +52,9 @@ def generate_comments():
     for post in posts:
         text = post.get("text", "")
         post_type = post.get("post_type", "insight")
+        
+        if not text:
+            continue
         
         user_message = f"Post text: {text}\nPost type: {post_type}\nWrite the comment now."
         

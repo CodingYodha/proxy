@@ -4,6 +4,10 @@ import email
 from email.header import decode_header
 import json
 
+# Project root (one level up from src/)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(PROJECT_ROOT, 'data')
+
 def get_body(msg):
     if msg.is_multipart():
         for part in msg.walk():
@@ -25,28 +29,33 @@ def poll_gmail_approvals():
         print("Missing GMAIL credentials for poller.")
         return
 
-    pending_file = "data/pending_approvals.json"
+    pending_file = os.path.join(DATA_DIR, "pending_approvals.json")
     if not os.path.exists(pending_file):
-        print("No pending approvals.")
+        print("No pending approvals file found.")
         return
 
     with open(pending_file, "r") as f:
         try:
             pending_approvals = json.load(f)
-        except:
+        except (json.JSONDecodeError, ValueError):
             return
+
+    if not pending_approvals:
+        print("No pending approvals.")
+        return
 
     from datetime import datetime, timedelta
     current_time = datetime.now()
     
     # Discard any pending approvals older than 24 hours
     for urn, data in pending_approvals.items():
-        if data["status"] == "pending" and "sent_at" in data:
+        if data.get("status") == "pending" and "sent_at" in data:
             try:
                 sent_at = datetime.fromisoformat(data["sent_at"])
                 if current_time - sent_at > timedelta(hours=24):
                     data["status"] = "expired"
-            except:
+                    print(f"Expired approval for {urn} (sent > 24h ago).")
+            except (ValueError, TypeError):
                 pass
 
     try:
@@ -119,11 +128,19 @@ def poll_gmail_approvals():
                                 status=pending_approvals[urn]["status"]
                             )
 
-        with open(pending_file, "w") as f:
-            json.dump(pending_approvals, f, indent=4)
-            
+        mail.logout()
+
     except Exception as e:
         print(f"Error polling gmail: {e}")
+    finally:
+        # Always save pending_approvals so expiry updates are persisted
+        # even if the IMAP connection fails
+        try:
+            os.makedirs(DATA_DIR, exist_ok=True)
+            with open(pending_file, "w") as f:
+                json.dump(pending_approvals, f, indent=4)
+        except Exception as e:
+            print(f"Error saving pending approvals: {e}")
 
 if __name__ == "__main__":
     poll_gmail_approvals()

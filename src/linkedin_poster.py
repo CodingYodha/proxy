@@ -2,9 +2,14 @@ import os
 import requests
 import json
 from datetime import datetime
+from urllib.parse import quote
+
+# Project root (one level up from src/)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(PROJECT_ROOT, 'data')
 
 def post_to_linkedin(urn: str, comment_text: str) -> bool:
-    count_file = "data/daily_count.json"
+    count_file = os.path.join(DATA_DIR, "daily_count.json")
     daily_data = {"date": "", "count": 0}
     
     today = datetime.now().strftime("%Y-%m-%d")
@@ -13,7 +18,7 @@ def post_to_linkedin(urn: str, comment_text: str) -> bool:
         with open(count_file, "r") as f:
             try:
                 daily_data = json.load(f)
-            except:
+            except (json.JSONDecodeError, ValueError):
                 pass
                 
     if daily_data.get("date") != today:
@@ -29,8 +34,17 @@ def post_to_linkedin(urn: str, comment_text: str) -> bool:
     if not access_token or not person_urn:
         print("LINKEDIN credentials missing for posting.")
         return False
-        
-    url = f"https://api.linkedin.com/v2/socialActions/{urn}/comments"
+    
+    # Fix: Strip existing "urn:li:person:" prefix if present to avoid double-wrapping
+    if person_urn.startswith("urn:li:person:"):
+        actor_urn = person_urn
+    else:
+        actor_urn = f"urn:li:person:{person_urn}"
+    
+    # Fix: URL-encode the URN in the path (colons must be encoded)
+    encoded_urn = quote(urn, safe='')
+    url = f"https://api.linkedin.com/v2/socialActions/{encoded_urn}/comments"
+    
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
@@ -38,7 +52,7 @@ def post_to_linkedin(urn: str, comment_text: str) -> bool:
     }
     
     payload = {
-        "actor": f"urn:li:person:{person_urn}",
+        "actor": actor_urn,
         "message": {
             "text": comment_text
         }
@@ -58,6 +72,7 @@ def post_to_linkedin(urn: str, comment_text: str) -> bool:
         response.raise_for_status()
         
         daily_data["count"] += 1
+        os.makedirs(DATA_DIR, exist_ok=True)
         with open(count_file, "w") as f:
             json.dump(daily_data, f, indent=4)
             

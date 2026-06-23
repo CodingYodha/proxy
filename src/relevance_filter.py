@@ -2,8 +2,12 @@ import os
 import json
 from groq import Groq
 
+# Project root (one level up from src/)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(PROJECT_ROOT, 'data')
+
 def filter_posts():
-    candidate_file = "data/candidate_posts.json"
+    candidate_file = os.path.join(DATA_DIR, "candidate_posts.json")
     if not os.path.exists(candidate_file):
         print("No candidate posts to filter.")
         return
@@ -11,7 +15,7 @@ def filter_posts():
     with open(candidate_file, "r") as f:
         try:
             posts = json.load(f)
-        except:
+        except (json.JSONDecodeError, ValueError):
             posts = []
 
     if not posts:
@@ -49,16 +53,20 @@ def filter_posts():
                     {"role": "system", "content": "You are a JSON-only response bot."},
                     {"role": "user", "content": prompt}
                 ],
-                model="openai/gpt-oss-120b",
+                model="llama-3.3-70b-versatile",
                 temperature=0.0
             )
             
             output = response.choices[0].message.content.strip()
             # Clean up markdown if model incorrectly outputs it
             if output.startswith("```json"):
-                output = output[7:-3]
+                output = output[7:]
+                if output.endswith("```"):
+                    output = output[:-3]
             elif output.startswith("```"):
-                output = output[3:-3]
+                output = output[3:]
+                if output.endswith("```"):
+                    output = output[:-3]
                 
             result = json.loads(output)
             if result.get("relevant"):

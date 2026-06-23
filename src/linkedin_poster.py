@@ -53,6 +53,7 @@ def post_to_linkedin(urn: str, comment_text: str) -> bool:
     
     payload = {
         "actor": actor_urn,
+        "object": urn,
         "message": {
             "text": comment_text
         }
@@ -60,6 +61,9 @@ def post_to_linkedin(urn: str, comment_text: str) -> bool:
     
     try:
         response = requests.post(url, headers=headers, json=payload)
+        
+        if response.status_code not in (200, 201):
+            print(f"Error from LinkedIn API ({response.status_code}): {response.text}")
         
         if response.status_code == 401:
             print("401 Unauthorized: Access token is invalid or expired. Failing gracefully.")

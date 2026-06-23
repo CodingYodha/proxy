@@ -1,5 +1,9 @@
 name: Poll Gmail Approvals
 
+concurrency:
+  group: linkedin-bot-data
+  cancel-in-progress: false
+
 on:
   workflow_dispatch:
   schedule:

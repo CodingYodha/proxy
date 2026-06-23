@@ -1,5 +1,9 @@
 name: Fetch and Queue Posts
 
+concurrency:
+  group: linkedin-bot-data
+  cancel-in-progress: false
+
 on:
   schedule:
     # Trigger every 30 minutes to check if it's time to run

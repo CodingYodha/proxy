@@ -16,13 +16,13 @@ jobs:
           python-version: '3.11'
       - name: Random delay and chance
         run: |
-          # 30% chance to skip this run completely to make intervals irregular
-          if [ $((RANDOM % 100)) -lt 30 ]; then
-            echo "Randomly skipping this run to mimic human behavior."
-            exit 0
-          fi
-          # Random sleep between 1 and 45 minutes
-          SLEEP_TIME=$((RANDOM % 2700 + 60))
+          # 30% chance skip temporarily disabled for testing
+          # if [ $((RANDOM % 100)) -lt 30 ]; then
+          #   echo "Randomly skipping this run to mimic human behavior."
+          #   exit 0
+          # fi
+          # Random sleep between 30 and 120 seconds for fast testing
+          SLEEP_TIME=$((RANDOM % 90 + 30))
           echo "Sleeping for $SLEEP_TIME seconds to randomize execution time..."
           sleep $SLEEP_TIME
       - run: pip install -r requirements.txt

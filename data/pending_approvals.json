@@ -2,7 +2,7 @@
     "urn:li:activity:7475118134287556608": {
         "drafted_comment": "The shift from \"code to execute\" to \"prompt to orchestrate\" is interesting, but I think we're underestimating how much deeper understanding still matters. When your BEV transformer hallucinates phantom objects or your agentic system gets stuck in degenerate loops, you can't prompt your way out without knowing why the failure modes exist. The real question is whether prompt engineering becomes a new kind of systems thinking or just a brittle interface layer that breaks under distribution shift.",
         "email_subject": "[APPROVE?] Comment on post by Artificial Intelligence, Machine Learning, Generative AI, Data Science & Python - Scientist, Analyst",
-        "status": "pending",
+        "status": "failed",
         "sent_at": "2026-06-23T09:33:12.995472",
         "author": "Artificial Intelligence, Machine Learning, Generative AI, Data Science & Python - Scientist, Analyst",
         "url": "https://www.linkedin.com/feed/update/urn:li:activity:7475118134287556608",

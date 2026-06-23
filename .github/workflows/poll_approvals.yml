@@ -20,6 +20,7 @@ jobs:
           LINKEDIN_PERSON_URN: ${{ secrets.LINKEDIN_PERSON_URN }}
           GMAIL_SENDER_ADDRESS: ${{ secrets.GMAIL_SENDER_ADDRESS }}
           GMAIL_SENDER_APP_PASSWORD: ${{ secrets.GMAIL_SENDER_APP_PASSWORD }}
+          GMAIL_RECEIVER_ADDRESS: ${{ secrets.GMAIL_RECEIVER_ADDRESS }}
           GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
       - name: Commit updated state

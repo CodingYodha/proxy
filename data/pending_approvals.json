@@ -162,7 +162,7 @@
     "urn:li:activity:7475127527187873794": {
         "drafted_comment": "This reminds me of Hubel and Wiesel's work on visual cortex neurons responding to edges and orientations. The jump from simple feature detectors to hierarchical representations is well understood now, but what still puzzles me is why certain architectures converge to human-like internal representations without being explicitly designed for it. Have you come across any work on representational alignment between biological and artificial vision systems during your BEVWaveFormer experiments?",
         "email_subject": "[APPROVE?] Comment on post by AI & Machine Learning Community (moderated) [7475127527187873794]",
-        "status": "pending",
+        "status": "failed",
         "sent_at": "2026-06-23T10:11:19.759570",
         "author": "AI & Machine Learning Community (moderated)",
         "url": "https://www.linkedin.com/feed/update/urn:li:activity:7475127527187873794",

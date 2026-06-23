@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 from linkedin_api import Linkedin
 from token_manager import check_token_expiry
 
@@ -32,8 +33,12 @@ def fetch_feed_and_filter():
         print('Missing LINKEDIN_LI_AT or LINKEDIN_JSESSIONID. Skipping fetch.')
         return
 
+    # Authenticate using cookies
+    cookie_dict = {"li_at": li_at, "JSESSIONID": jsessionid}
+    jar = requests.cookies.cookiejar_from_dict(cookie_dict)
+    
     try:
-        api = Linkedin('', '', cookies={'li_at': li_at, 'JSESSIONID': jsessionid})
+        api = Linkedin('', '', cookies=jar)
     except Exception as e:
         print(f'Failed to authenticate with linkedin-api: {e}')
         return

@@ -2,8 +2,8 @@ name: Fetch and Queue Posts
 
 on:
   schedule:
-    # Run every 3 hours as a baseline, but we will add randomness inside the job
-    - cron: '17 */3 * * *'
+    # Trigger every 30 minutes to check if it's time to run
+    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -11,22 +11,56 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Check Random Schedule
+        id: schedule
+        run: |
+          FILE="data/next_run.txt"
+          NOW=$(date +%s)
+          if [ -f "$FILE" ]; then
+            NEXT_RUN=$(cat $FILE)
+          else
+            # First time running, trigger immediately
+            NEXT_RUN=0
+          fi
+          
+          if [ $NOW -ge $NEXT_RUN ]; then
+            echo "It is time to run! Mimicking human login..."
+            # Generate next run between 5 to 12 hours (18000 to 43200 seconds)
+            RANDOM_DELAY=$(( RANDOM % 25200 + 18000 ))
+            NEXT_TIME=$(( NOW + RANDOM_DELAY ))
+            
+            mkdir -p data
+            echo $NEXT_TIME > $FILE
+            
+            # Print the next run time in human readable format
+            NEXT_HUMAN=$(date -d @$NEXT_TIME)
+            echo "Next run scheduled for: $NEXT_HUMAN (in $((RANDOM_DELAY / 3600))h $(((RANDOM_DELAY % 3600) / 60))m)"
+            
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          else
+            WAIT_TIME=$(( NEXT_RUN - NOW ))
+            echo "Not time yet. Next run is at $(date -d @$NEXT_RUN) (in $((WAIT_TIME / 3600))h $(((WAIT_TIME % 3600) / 60))m)"
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          fi
+
       - uses: actions/setup-python@v5
+        if: steps.schedule.outputs.should_run == 'true'
         with:
           python-version: '3.11'
-      - name: Random delay and chance
+          
+      - name: Random pre-fetch delay
+        if: steps.schedule.outputs.should_run == 'true'
         run: |
-          # 30% chance skip temporarily disabled for testing
-          # if [ $((RANDOM % 100)) -lt 30 ]; then
-          #   echo "Randomly skipping this run to mimic human behavior."
-          #   exit 0
-          # fi
-          # Random sleep between 30 and 120 seconds for fast testing
           SLEEP_TIME=$((RANDOM % 90 + 30))
-          echo "Sleeping for $SLEEP_TIME seconds to randomize execution time..."
+          echo "Sleeping for $SLEEP_TIME seconds to randomize exact execution minute..."
           sleep $SLEEP_TIME
+
       - run: pip install -r requirements.txt
+        if: steps.schedule.outputs.should_run == 'true'
+        
       - run: python src/linkedin_fetcher.py && python src/relevance_filter.py && python src/comment_generator.py && python src/gmail_sender.py
+        if: steps.schedule.outputs.should_run == 'true'
         env:
           LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
           LINKEDIN_TOKEN_ISSUE_DATE: ${{ secrets.LINKEDIN_TOKEN_ISSUE_DATE }}
@@ -37,7 +71,8 @@ jobs:
           GMAIL_SENDER_ADDRESS: ${{ secrets.GMAIL_SENDER_ADDRESS }}
           GMAIL_SENDER_APP_PASSWORD: ${{ secrets.GMAIL_SENDER_APP_PASSWORD }}
           GMAIL_RECEIVER_ADDRESS: ${{ secrets.GMAIL_RECEIVER_ADDRESS }}
-      - name: Commit updated seen_posts and pending_approvals
+          
+      - name: Commit updated state
         run: |
           git config user.email "bot@github.com"
           git config user.name "CommentBot"

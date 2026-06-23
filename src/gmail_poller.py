@@ -63,7 +63,9 @@ def poll_gmail_approvals():
         mail.login(sender_email, sender_password)
         mail.select("inbox")
         
-        status, messages = mail.search(None, 'UNSEEN')
+        # Search ALL emails instead of just UNSEEN.
+        # We rely on pending_approvals["status"] == "pending" to prevent double-processing.
+        status, messages = mail.search(None, 'ALL')
         if status != "OK":
             return
             

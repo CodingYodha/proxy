@@ -5,9 +5,6 @@ concurrency:
   cancel-in-progress: false
 
 on:
-  schedule:
-    # Trigger every 30 minutes to check if it's time to run
-    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 jobs:
